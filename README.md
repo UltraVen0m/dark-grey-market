@@ -18,8 +18,37 @@ Both participants receive email when a trade is offered, accepted, rejected, neg
 
 The planned site uses a dark theme with black, white, and predominantly dark grey.
 
-## Technical direction and current state
+## Run locally
 
-Matthew has chosen Next.js, PostgreSQL, Vercel, [Better Auth](https://better-auth.com/) for sign-up/sign-in, and [Resend](https://resend.com/) for trade emails. These are decisions, not installed or configured services. This directory contains product documentation only: there is no application code, dependency manifest, database configuration, test suite, deployment, or runnable setup yet.
+This first slice is a public browse page backed by PostgreSQL. It has seed listings only; sign-in, uploads, and trades are not implemented yet.
 
-This is a fun friends' app without a moderation workflow. Users should trade only stock they own and consider hygiene, safety, and school rules; a playful example is not automatically suitable. Add actual installation, configuration, run, and test instructions here when implementation begins.
+1. Copy `.env.example` to `.env.local` and set `DATABASE_URL` for a local PostgreSQL database named `dark_grey_market`.
+2. Create that database: `createdb dark_grey_market`.
+3. Install dependencies: `npm install`.
+4. Create the schema and seed the public listings: `npm run db:migrate && npm run db:seed`.
+5. Start the app: `npm run dev`, then open [http://localhost:3000](http://localhost:3000).
+
+The public query selects only listed stock, its name, description, image, owner's username, and owner's profile image. It intentionally does not select email or credential data.
+
+## Verify the public page
+
+The browser test starts the running application against an isolated PostgreSQL database, resets it, migrates it, and seeds it. Set `TEST_DATABASE_URL` in `.env.local` to a database whose name ends in `_test`, create it, install Playwright's browser once, and run the test:
+
+```sh
+createdb dark_grey_market_test
+npx playwright install chromium
+TEST_DATABASE_URL=postgres://postgres:postgres@localhost:5432/dark_grey_market_test npm test
+```
+
+The test verifies a visitor can see persisted listed stock and owner public profiles, while a seeded unlisted item and seed email addresses are absent.
+
+## Deploy to Vercel
+
+1. Import this repository into Vercel. It detects Next.js through `vercel.json`.
+2. Create or connect a PostgreSQL database, then add its pooled connection string as the `DATABASE_URL` environment variable for Preview and Production.
+3. Run `npm run db:migrate` and `npm run db:seed` once against that database (for example, locally with Vercel's pulled environment variables, or through a controlled deployment migration step).
+4. Deploy. The root route renders the public browse page using `DATABASE_URL`.
+
+Do not use the test database URL in Vercel. Add future auth and email environment variables only with their respective integrations.
+
+This is a fun friends' app without a moderation workflow. Users should trade only stock they own and consider hygiene, safety, and school rules where applicable; a playful example is not automatically suitable.
