@@ -1,6 +1,6 @@
 # Dark Grey Market
 
-Dark Grey Market is a planned, playful trading site for Matthew and friends at school. Anyone can browse stock listed by others. Signed-in users upload stock they own and arrange direct swaps, with no prices, payments, or sales.
+Dark Grey Market is a planned, playful trading site inspired by swapping things with friends at school. Anyone can browse stock listed by others, and anyone can sign up without a school-membership, invitation, or approval gate. Signed-in users upload stock they own and arrange direct swaps, with no prices, payments, or sales.
 
 **Stock** means items users upload. Public listings show the stock and its owner's username and profile picture.
 
@@ -9,10 +9,10 @@ Dark Grey Market is a planned, playful trading site for Matthew and friends at s
 1. A visitor browses publicly listed stock. They can sign up or sign in to trade.
 2. A signed-in user manages their email, password, username, and profile picture, and uploads stock with a picture, name, and description.
 3. The user selects another user's listed stock and offers one or more pieces of their own stock for it.
-4. Making the offer starts an active trade. Every stock item involved belongs to that trade and is unavailable to another active trade. The recipient chooses **Yeah Sure** to accept, **Nah** to decline, or **Gimme Sumore** to ask for more. After Gimme Sumore, the offerer can add more of their stock to the same trade or cancel it.
+4. Making the offer starts an active trade. Every stock item involved belongs to that trade and is unavailable to another active trade. The recipient chooses **Yeah Sure** to accept, **Nah** to decline, or **Gimme Sumore** to ask for more. After Gimme Sumore, the original offerer can add more stock to the same trade or cancel it. If they add stock, the recipient chooses from those same three responses again; this cycle has no fixed round limit.
 5. Either participant can cancel an active trade, including after acceptance; cancellation releases its stock for other trades. After an accepted trade is exchanged in real life, both participants click **Done**. Only then does the app swap ownership, mark it complete, and show it on each person's completed trades page.
 
-Both participants receive email when a trade is offered, accepted, rejected, negotiated, or completed.
+Both participants receive email when a trade is offered, accepted, declined, negotiated, cancelled, or completed. Either participant's cancellation notifies both people.
 
 ## Visual direction
 
