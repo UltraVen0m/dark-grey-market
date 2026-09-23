@@ -20,6 +20,17 @@ export const auth = betterAuth({
       emailVerified: "email_verified",
       createdAt: "created_at",
       updatedAt: "updated_at"
+    },
+    changeEmail: {
+      enabled: true,
+      updateEmailWithoutVerification: true
+    },
+    additionalFields: {
+      username: {
+        type: "string",
+        required: false,
+        input: true
+      }
     }
   },
   databaseHooks: {

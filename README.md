@@ -20,7 +20,7 @@ The planned site uses a dark theme with black, white, and predominantly dark gre
 
 ## Run locally
 
-This slice includes public browsing and Better Auth email/password accounts. Uploads and trades are not implemented yet.
+This slice includes public browsing and Better Auth email/password accounts. Signed-in users can update their username, profile-picture URL, email, and password from `/account`; updates to the username and picture appear on their listed stock. Uploads and trades are not implemented yet.
 
 1. Copy `.env.example` to `.env.local` and set `DATABASE_URL` for a local PostgreSQL database named `dark_grey_market`. Add `BETTER_AUTH_URL=http://localhost:3000` and a high-entropy `BETTER_AUTH_SECRET` of at least 32 characters.
 2. Create that database: `createdb dark_grey_market`.
