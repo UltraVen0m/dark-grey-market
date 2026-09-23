@@ -30,17 +30,16 @@ This slice includes public browsing and Better Auth email/password accounts. Upl
 
 The public query selects only listed stock, its name, description, image, owner's username, and owner's profile image. It intentionally does not select email or credential data. Better Auth stores password hashes, accounts, sessions, and verification records in its own tables; its account page checks the current session on the server before rendering private details.
 
-## Verify the public page
+## Verify
 
-The browser test starts the running application against an isolated PostgreSQL database, resets it, migrates it, and seeds it. Set `TEST_DATABASE_URL` in `.env.local` to a database whose name ends in `_test`, create it, install Playwright's browser once, and run the test:
+`npm test` runs unit and component tests. The smoke suite starts from a production build against an isolated PostgreSQL database, resets it, migrates it, and seeds it. Set `TEST_DATABASE_URL` in `.env.local` to a database whose name ends in `_test`, then create it and run:
 
 ```sh
 createdb dark_grey_market_test
-npx playwright install chromium
-TEST_DATABASE_URL=postgres://postgres:postgres@localhost:5432/dark_grey_market_test npm test
+TEST_DATABASE_URL=postgres://postgres:postgres@localhost:5432/dark_grey_market_test npm run test:smoke
 ```
 
-The tests verify a visitor can see persisted listed stock and owner public profiles, while a seeded unlisted item and seed email addresses are absent. They also create separate email/password accounts, confirm signed-out visitors are redirected from `/account`, and verify a returning user can sign in again.
+The smoke tests verify a visitor can see persisted listed stock and owner public profiles, while a seeded unlisted item and seed email addresses are absent. They also create separate email/password accounts, confirm signed-out visitors are redirected from `/account`, and verify a returning user can sign in again. Run every required check with `npm run test:all`.
 
 ## Deploy to Vercel
 

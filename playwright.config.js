@@ -7,10 +7,10 @@ if (!testDatabaseUrl) {
 }
 
 export default defineConfig({
-  testDir: "./tests",
+  testDir: "./tests/smoke",
   fullyParallel: false,
   webServer: {
-    command: "npm run db:test:reset && npm run db:migrate && npm run db:seed && npm run dev",
+    command: "npm run db:test:reset && npm run db:migrate && npm run db:seed && npm run build && npm run start",
     url: "http://127.0.0.1:3000",
     reuseExistingServer: false,
     env: {

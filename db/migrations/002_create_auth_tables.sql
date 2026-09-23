@@ -1,12 +1,6 @@
-CREATE TABLE IF NOT EXISTS "user" (
-  id TEXT PRIMARY KEY,
-  name TEXT NOT NULL,
-  email TEXT NOT NULL UNIQUE,
-  "emailVerified" BOOLEAN NOT NULL DEFAULT false,
-  image TEXT,
-  "createdAt" TIMESTAMPTZ NOT NULL DEFAULT now(),
-  "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT now()
-);
+ALTER TABLE users
+  ADD COLUMN IF NOT EXISTS email_verified BOOLEAN NOT NULL DEFAULT false,
+  ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ NOT NULL DEFAULT now();
 
 CREATE TABLE IF NOT EXISTS session (
   id TEXT PRIMARY KEY,
@@ -16,7 +10,7 @@ CREATE TABLE IF NOT EXISTS session (
   "updatedAt" TIMESTAMPTZ NOT NULL DEFAULT now(),
   "ipAddress" TEXT,
   "userAgent" TEXT,
-  "userId" TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE
+  "userId" UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE
 );
 
 CREATE INDEX IF NOT EXISTS session_user_id_idx ON session ("userId");
@@ -25,7 +19,7 @@ CREATE TABLE IF NOT EXISTS account (
   id TEXT PRIMARY KEY,
   "accountId" TEXT NOT NULL,
   "providerId" TEXT NOT NULL,
-  "userId" TEXT NOT NULL REFERENCES "user"(id) ON DELETE CASCADE,
+  "userId" UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   "accessToken" TEXT,
   "refreshToken" TEXT,
   "idToken" TEXT,

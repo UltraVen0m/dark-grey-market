@@ -22,18 +22,23 @@ export function AuthForm({ mode }) {
       password: form.get("password"),
       callbackURL: "/account"
     };
-    const result = isSignUp
-      ? await authClient.signUp.email({ ...credentials, name: form.get("name") })
-      : await authClient.signIn.email(credentials);
+    try {
+      const result = isSignUp
+        ? await authClient.signUp.email({ ...credentials, name: form.get("name") })
+        : await authClient.signIn.email(credentials);
 
-    setIsSubmitting(false);
-    if (result.error) {
-      setError(result.error.message || "That did not work. Please try again.");
-      return;
+      if (result.error) {
+        setError(result.error.message || "That did not work. Please try again.");
+        return;
+      }
+
+      router.replace("/account");
+      router.refresh();
+    } catch {
+      setError("We could not reach the market. Please try again.");
+    } finally {
+      setIsSubmitting(false);
     }
-
-    router.replace("/account");
-    router.refresh();
   }
 
   return (
