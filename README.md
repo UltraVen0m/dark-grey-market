@@ -20,15 +20,15 @@ The planned site uses a dark theme with black, white, and predominantly dark gre
 
 ## Run locally
 
-This first slice is a public browse page backed by PostgreSQL. It has seed listings only; sign-in, uploads, and trades are not implemented yet.
+This slice includes public browsing and Better Auth email/password accounts. Uploads and trades are not implemented yet.
 
-1. Copy `.env.example` to `.env.local` and set `DATABASE_URL` for a local PostgreSQL database named `dark_grey_market`.
+1. Copy `.env.example` to `.env.local` and set `DATABASE_URL` for a local PostgreSQL database named `dark_grey_market`. Add `BETTER_AUTH_URL=http://localhost:3000` and a high-entropy `BETTER_AUTH_SECRET` of at least 32 characters.
 2. Create that database: `createdb dark_grey_market`.
 3. Install dependencies: `npm install`.
 4. Create the schema and seed the public listings: `npm run db:migrate && npm run db:seed`.
 5. Start the app: `npm run dev`, then open [http://localhost:3000](http://localhost:3000).
 
-The public query selects only listed stock, its name, description, image, owner's username, and owner's profile image. It intentionally does not select email or credential data.
+The public query selects only listed stock, its name, description, image, owner's username, and owner's profile image. It intentionally does not select email or credential data. Better Auth stores password hashes, accounts, sessions, and verification records in its own tables; its account page checks the current session on the server before rendering private details.
 
 ## Verify the public page
 
@@ -40,7 +40,7 @@ npx playwright install chromium
 TEST_DATABASE_URL=postgres://postgres:postgres@localhost:5432/dark_grey_market_test npm test
 ```
 
-The test verifies a visitor can see persisted listed stock and owner public profiles, while a seeded unlisted item and seed email addresses are absent.
+The tests verify a visitor can see persisted listed stock and owner public profiles, while a seeded unlisted item and seed email addresses are absent. They also create separate email/password accounts, confirm signed-out visitors are redirected from `/account`, and verify a returning user can sign in again.
 
 ## Deploy to Vercel
 
@@ -49,6 +49,6 @@ The test verifies a visitor can see persisted listed stock and owner public prof
 3. Run `npm run db:migrate` and `npm run db:seed` once against that database (for example, locally with Vercel's pulled environment variables, or through a controlled deployment migration step).
 4. Deploy. The root route renders the public browse page using `DATABASE_URL`.
 
-Do not use the test database URL in Vercel. Add future auth and email environment variables only with their respective integrations.
+Do not use the test database URL in Vercel. Add `BETTER_AUTH_URL` for the deployed app's URL and a unique high-entropy `BETTER_AUTH_SECRET` for each environment. Add future email environment variables only with their respective integrations.
 
 This is a fun friends' app without a moderation workflow. Users should trade only stock they own and consider hygiene, safety, and school rules where applicable; a playful example is not automatically suitable.

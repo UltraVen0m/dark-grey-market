@@ -1,14 +1,17 @@
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { createPool } from "./database.mjs";
 
-const migrationUrl = new URL("../db/migrations/001_create_public_stock.sql", import.meta.url);
-const sql = await readFile(fileURLToPath(migrationUrl), "utf8");
+const migrationsDirectory = fileURLToPath(new URL("../db/migrations/", import.meta.url));
+const migrations = (await readdir(migrationsDirectory)).filter((file) => file.endsWith(".sql")).sort();
 const pool = createPool();
 
 try {
-  await pool.query(sql);
-  console.log("Applied public-stock schema.");
+  for (const migration of migrations) {
+    const sql = await readFile(`${migrationsDirectory}${migration}`, "utf8");
+    await pool.query(sql);
+    console.log(`Applied ${migration}.`);
+  }
 } finally {
   await pool.end();
 }

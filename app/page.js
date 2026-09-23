@@ -1,4 +1,5 @@
 import { getListedStock } from "./lib/public-stock";
+import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
@@ -11,7 +12,11 @@ export default async function BrowsePage() {
         <p className="eyebrow">Dark Grey Market</p>
         <h1>Good stuff. Strange stuff. Your next swap.</h1>
         <p className="intro">Have a look around. Sign in when you are ready to put something on the table.</p>
-        <a className="join-link" href="#stock">Browse the stock <span aria-hidden="true">↓</span></a>
+        <div className="hero-actions">
+          <Link className="auth-link" href="/sign-up">Sign up</Link>
+          <Link className="auth-link" href="/sign-in">Sign in</Link>
+          <a className="join-link" href="#stock">Browse the stock <span aria-hidden="true">↓</span></a>
+        </div>
       </header>
 
       <section id="stock" aria-labelledby="stock-heading">
