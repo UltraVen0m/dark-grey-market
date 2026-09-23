@@ -43,6 +43,9 @@ h1 { max-width: 850px; margin: 0; font-size: clamp(3rem, 8vw, 7rem); line-height
 .owned-stock .listed-status, .owned-stock .private-status { margin-top: 10px; font-size: .82rem; font-weight: 700; }
 .owned-stock .listed-status { color: #d4ff4e; }
 .owned-stock .private-status { color: #bdbdb9; }
+.listing-control { margin-top: 12px; }
+.listing-control button { padding: 8px 11px; border: 1px solid #d4ff4e; background: transparent; color: #d4ff4e; font: inherit; font-size: .85rem; font-weight: 700; cursor: pointer; }
+.listing-control button:disabled { cursor: wait; opacity: .65; }
 section { padding: 64px 0 44px; }
 .section-heading { display: flex; gap: 24px; align-items: end; justify-content: space-between; margin-bottom: 28px; }
 h2 { margin: 0; font-size: clamp(1.75rem, 4vw, 3.2rem); letter-spacing: -.045em; }

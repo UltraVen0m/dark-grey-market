@@ -34,3 +34,15 @@ export async function createStock({ ownerId, name, description, imageUrl, isList
 
   return result.rows[0];
 }
+
+export async function listStock({ stockId, ownerId }) {
+  const result = await getPool().query(
+    `UPDATE stock
+     SET is_listed = true
+     WHERE id = $1 AND owner_id = $2
+     RETURNING id`,
+    [stockId, ownerId]
+  );
+
+  return result.rows[0];
+}

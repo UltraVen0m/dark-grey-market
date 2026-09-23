@@ -62,6 +62,15 @@ test("an owner can add private and listed stock without exposing private stock t
   await expect(owner.getByRole("status")).toHaveText("Stock added to your stash.");
   await expect(owner.getByText("Private test treasure", { exact: true })).toBeVisible();
   await expect(owner.getByText("Private", { exact: true })).toBeVisible();
+  await owner.getByRole("button", { name: "List publicly" }).click();
+  await expect(owner.getByRole("status")).toHaveText("Stock listed publicly.");
+  await expect(owner.getByText("Listed publicly", { exact: true })).toBeVisible();
+
+  await owner.getByLabel("Picture").setInputFiles(picture);
+  await owner.getByLabel("Name").fill("Still private test treasure");
+  await owner.getByLabel("Description").fill("This stays hidden from everyone else.");
+  await owner.getByRole("button", { name: "Add stock" }).click();
+  await expect(owner.getByText("Still private test treasure", { exact: true })).toBeVisible();
 
   await owner.getByLabel("Picture").setInputFiles(picture);
   await owner.getByLabel("Name").fill("Listed test treasure");
@@ -78,6 +87,7 @@ test("an owner can add private and listed stock without exposing private stock t
   await otherUser.getByLabel("Password").fill("a-different-long-password");
   await otherUser.getByRole("button", { name: "Make my account" }).click();
   await expect(otherUser.getByText("Private test treasure", { exact: true })).not.toBeVisible();
+  await expect(otherUser.getByText("Still private test treasure", { exact: true })).not.toBeVisible();
   await expect(otherUser.getByText("Listed test treasure", { exact: true })).not.toBeVisible();
 
   const visitor = await browser.newPage();
@@ -85,7 +95,8 @@ test("an owner can add private and listed stock without exposing private stock t
   await expect(visitor.getByRole("heading", { name: "Listed test treasure" })).toBeVisible();
   await expect(visitor.getByText("A real listing that other people can browse.")).toBeVisible();
   await expect(visitor.getByText("stock-owner", { exact: true })).toBeVisible();
-  await expect(visitor.getByText("Private test treasure", { exact: true })).not.toBeVisible();
+  await expect(visitor.getByRole("heading", { name: "Private test treasure" })).toBeVisible();
+  await expect(visitor.getByText("Still private test treasure", { exact: true })).not.toBeVisible();
   await expect(visitor.locator("body")).not.toContainText("stock-owner@example.test");
 
   await owner.close();

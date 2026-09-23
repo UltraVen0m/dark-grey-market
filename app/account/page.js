@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { auth } from "../lib/auth";
 import { SignOutButton } from "../components/sign-out-button";
 import { StockForm } from "../components/stock-form";
+import { StockListingControl } from "../components/stock-listing-control";
 import { getOwnedStock } from "../lib/stock";
 
 export const dynamic = "force-dynamic";
@@ -28,7 +29,7 @@ export default async function AccountPage() {
         <h2 id="your-stock-heading">Your stock</h2>
         {stock.length ? <div className="owned-stock-grid">{stock.map((item) => <article className="owned-stock" key={item.id}>
           <img src={item.imageUrl} alt="" />
-          <div><h3>{item.name}</h3><p>{item.description}</p><p className={item.isListed ? "listed-status" : "private-status"}>{item.isListed ? "Listed publicly" : "Private"}</p></div>
+          <div><h3>{item.name}</h3><p>{item.description}</p>{item.isListed ? <p className="listed-status">Listed publicly</p> : <><p className="private-status">Private</p><StockListingControl stockId={item.id} /></>}</div>
         </article>)}</div> : <p className="empty">Your stash is empty. Put your first thing on the table.</p>}
       </section>
       <SignOutButton />

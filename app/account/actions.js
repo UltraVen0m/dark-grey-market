@@ -3,7 +3,7 @@
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { auth } from "../lib/auth";
-import { createStock } from "../lib/stock";
+import { createStock, listStock as persistListedStock } from "../lib/stock";
 
 const MAX_IMAGE_BYTES = 1024 * 1024;
 const IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
@@ -38,4 +38,17 @@ export async function addStock(_previousState, formData) {
   revalidatePath("/");
   revalidatePath("/account");
   return { success: "Stock added to your stash." };
+}
+
+export async function listStock(_previousState, formData) {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session) return { error: "Please sign in before listing stock." };
+
+  const stockId = String(formData.get("stockId") || "");
+  const stock = await persistListedStock({ stockId, ownerId: session.user.id });
+  if (!stock) return { error: "That stock is not in your stash." };
+
+  revalidatePath("/");
+  revalidatePath("/account");
+  return { success: "Stock listed publicly." };
 }
