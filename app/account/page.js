@@ -5,11 +5,15 @@ import { SignOutButton } from "../components/sign-out-button";
 import { StockForm } from "../components/stock-form";
 import { StockListingControl } from "../components/stock-listing-control";
 import { getOwnedStock } from "../lib/stock";
+import { ProfileForm } from "../components/profile-form";
 
 export const dynamic = "force-dynamic";
 
 export default async function AccountPage() {
-  const session = await auth.api.getSession({ headers: await headers() });
+  const session = await auth.api.getSession({
+    headers: await headers(),
+    query: { disableCookieCache: true }
+  });
   if (!session) redirect("/sign-in");
   const stock = await getOwnedStock(session.user.id);
 
@@ -17,8 +21,13 @@ export default async function AccountPage() {
     <main className="auth-page">
       <p className="eyebrow">Your account</p>
       <h1>Hello, {session.user.name}.</h1>
-      <p className="intro">This space is just for you. Add things you own, then choose which ones people can browse for a swap.</p>
-      <dl className="account-details"><dt>Username</dt><dd>{session.user.name}</dd><dt>Email</dt><dd>{session.user.email}</dd></dl>
+      <p className="intro">Make this account yours, then add things you own and choose what people can browse for a swap.</p>
+      <ProfileForm
+        email={session.user.email}
+        profileImageUrl={session.user.image || "/avatars/default.svg"}
+        username={session.user.name}
+      />
+      <dl className="account-summary"><dt>Username</dt><dd>{session.user.name}</dd><dt>Email</dt><dd>{session.user.email}</dd></dl>
       <section className="account-stock" aria-labelledby="add-stock-heading">
         <p className="eyebrow">Your stash</p>
         <h2 id="add-stock-heading">Add some stock</h2>
