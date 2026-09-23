@@ -24,6 +24,13 @@ export const auth = betterAuth({
     changeEmail: {
       enabled: true,
       updateEmailWithoutVerification: true
+    },
+    additionalFields: {
+      username: {
+        type: "string",
+        required: false,
+        input: true
+      }
     }
   },
   databaseHooks: {

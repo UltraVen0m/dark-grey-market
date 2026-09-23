@@ -16,7 +16,7 @@ async function addListedStockFor(email) {
     await pool.query(
       `INSERT INTO stock (id, owner_id, name, description, image_url, is_listed)
        VALUES ($1, $2, $3, $4, $5, true)`,
-      [crypto.randomUUID(), user.id, "Alice's test badge", "A listed item used to verify public profile updates.", "/stock/glow-stickers.svg"]
+      ["bd402555-ef50-4f4c-9c71-3a568e86c2f6", user.id, "Alice's test badge", "A listed item used to verify public profile updates.", "/stock/glow-stickers.svg"]
     );
   } finally {
     await pool.end();
@@ -66,7 +66,8 @@ test("a separate account cannot see another account's details and public browsin
 });
 
 test("a user updates their profile, email, and password while their listing shows only the new public profile", async ({ browser }) => {
-  const alice = await browser.newPage();
+  const aliceContext = await browser.newContext();
+  const alice = await aliceContext.newPage();
   await alice.goto("/sign-up");
   await alice.getByLabel("Username").fill("profile-alice");
   await alice.getByLabel("Email").fill("profile-alice@example.test");
@@ -83,7 +84,7 @@ test("a user updates their profile, email, and password while their listing show
 
   await alice.getByLabel("Email").fill("profile-alice-new@example.test");
   await alice.getByRole("button", { name: "Save email" }).click();
-  await expect(alice.getByRole("status")).toHaveText("Your email is saved.");
+  await expect(alice.getByRole("status")).toHaveText("Your email request was processed. Your account now shows your current address.");
   await alice.reload();
   await expect(alice.getByLabel("Email")).toHaveValue("profile-alice-new@example.test");
 
@@ -93,7 +94,8 @@ test("a user updates their profile, email, and password while their listing show
   await alice.getByRole("button", { name: "Save password" }).click();
   await expect(alice.getByRole("status")).toHaveText("Your password is saved.");
 
-  const bob = await browser.newPage();
+  const bobContext = await browser.newContext();
+  const bob = await bobContext.newPage();
   await bob.goto("/sign-up");
   await bob.getByLabel("Username").fill("profile-bob");
   await bob.getByLabel("Email").fill("profile-bob@example.test");
@@ -101,8 +103,19 @@ test("a user updates their profile, email, and password while their listing show
   await bob.getByRole("button", { name: "Make my account" }).click();
   await expect(bob.getByText("profile-alice-new@example.test", { exact: true })).not.toBeVisible();
   await expect(bob.getByLabel("Username")).toHaveValue("profile-bob");
+  await expect(bob.getByLabel("Email")).toHaveValue("profile-bob@example.test");
+  await bob.evaluate(async () => {
+    await fetch("/api/auth/update-user", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ username: "not-alice", image: "/avatars/mossy.svg" })
+    });
+  });
+  await alice.reload();
+  await expect(alice.getByRole("heading", { name: "Hello, profile-alice-new." })).toBeVisible();
 
-  const visitor = await browser.newPage();
+  const visitorContext = await browser.newContext();
+  const visitor = await visitorContext.newPage();
   await visitor.goto("/");
   const listing = visitor.getByRole("article").filter({ hasText: "Alice's test badge" });
   await expect(listing.getByText("Listed by profile-alice-new")).toBeVisible();
@@ -116,7 +129,7 @@ test("a user updates their profile, email, and password while their listing show
   await alice.getByRole("button", { name: "Sign in" }).click();
   await expect(alice.getByRole("heading", { name: "Hello, profile-alice-new." })).toBeVisible();
 
-  await alice.close();
-  await bob.close();
-  await visitor.close();
+  await aliceContext.close();
+  await bobContext.close();
+  await visitorContext.close();
 });

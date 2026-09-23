@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { authClient } from "../lib/auth-client";
 
 function messageFor(result, fallback) {
@@ -12,7 +12,10 @@ export function ProfileForm({ email, profileImageUrl, username }) {
   const router = useRouter();
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [emailValue, setEmailValue] = useState(email);
   const [saving, setSaving] = useState("");
+
+  useEffect(() => setEmailValue(email), [email]);
 
   async function save(kind, request, successMessage) {
     setMessage("");
@@ -39,7 +42,7 @@ export function ProfileForm({ email, profileImageUrl, username }) {
     const form = new FormData(event.currentTarget);
     save(
       "public-profile",
-      () => authClient.updateUser({ name: form.get("username"), image: form.get("profileImageUrl") }),
+      () => authClient.updateUser({ username: form.get("username"), image: form.get("profileImageUrl") }),
       "Your public profile is saved."
     );
   }
@@ -47,7 +50,11 @@ export function ProfileForm({ email, profileImageUrl, username }) {
   function handleEmail(event) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    save("email", () => authClient.changeEmail({ newEmail: form.get("email") }), "Your email is saved.");
+    save(
+      "email",
+      () => authClient.changeEmail({ newEmail: form.get("email") }),
+      "Your email request was processed. Your account now shows your current address."
+    );
   }
 
   function handlePassword(event) {
@@ -80,7 +87,7 @@ export function ProfileForm({ email, profileImageUrl, username }) {
 
       <form className="account-details" onSubmit={handleEmail}>
         <h2>Email</h2>
-        <label>Email<input name="email" type="email" required defaultValue={email} autoComplete="email" /></label>
+        <label>Email<input name="email" type="email" required value={emailValue} onChange={(event) => setEmailValue(event.target.value)} autoComplete="email" /></label>
         <button type="submit" disabled={saving === "email"}>{saving === "email" ? "Saving…" : "Save email"}</button>
       </form>
 

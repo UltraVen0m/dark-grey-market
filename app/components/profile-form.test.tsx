@@ -29,8 +29,8 @@ describe("ProfileForm", () => {
     await user.type(screen.getByLabelText("Profile picture URL"), "/avatars/orbit.svg");
     await user.click(screen.getByRole("button", { name: "Save public profile" }));
 
-    expect(updateUser).toHaveBeenCalledWith({ name: "alice-updated", image: "/avatars/orbit.svg" });
     expect(await screen.findByRole("status")).toHaveTextContent("Your public profile is saved.");
+    expect(updateUser).toHaveBeenCalledWith({ username: "alice-updated", image: "/avatars/orbit.svg" });
     expect(refresh).toHaveBeenCalled();
   });
 
@@ -45,5 +45,18 @@ describe("ProfileForm", () => {
 
     expect(await screen.findByRole("alert")).toHaveTextContent("Your new passwords need to match.");
     expect(changePassword).not.toHaveBeenCalled();
+  });
+
+  test("does not claim an email request saved an address", async () => {
+    changeEmail.mockResolvedValueOnce({ data: { status: true } });
+    const user = userEvent.setup();
+    render(<ProfileForm email="alice@example.test" username="alice" profileImageUrl="/avatars/default.svg" />);
+
+    await user.clear(screen.getByLabelText("Email"));
+    await user.type(screen.getByLabelText("Email"), "taken@example.test");
+    await user.click(screen.getByRole("button", { name: "Save email" }));
+
+    expect(await screen.findByRole("status")).toHaveTextContent("Your email request was processed. Your account now shows your current address.");
+    expect(screen.queryByText("Your email is saved.")).not.toBeInTheDocument();
   });
 });
