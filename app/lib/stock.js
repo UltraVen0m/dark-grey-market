@@ -3,6 +3,12 @@ import pg from "pg";
 const { Pool } = pg;
 let pool;
 
+function imageSource({ id, imageUrl }) {
+  return imageUrl.includes(".private.blob.vercel-storage.com/")
+    ? `/api/stock/${id}/image`
+    : imageUrl;
+}
+
 function getPool() {
   if (!process.env.DATABASE_URL) {
     throw new Error("DATABASE_URL must be set to manage stock.");
@@ -21,7 +27,18 @@ export async function getOwnedStock(ownerId) {
     [ownerId]
   );
 
-  return result.rows;
+  return result.rows.map((stock) => ({ ...stock, imageUrl: imageSource(stock) }));
+}
+
+export async function getStockImage(stockId) {
+  const result = await getPool().query(
+    `SELECT owner_id AS "ownerId", is_listed AS "isListed", image_url AS "imageUrl"
+     FROM stock
+     WHERE id = $1`,
+    [stockId]
+  );
+
+  return result.rows[0];
 }
 
 export async function createStock({ ownerId, name, description, imageUrl, isListed }) {

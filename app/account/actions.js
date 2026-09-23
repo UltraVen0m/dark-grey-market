@@ -2,11 +2,13 @@
 
 import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
+import { put } from "@vercel/blob";
 import { auth } from "../lib/auth";
 import { createStock, listStock as persistListedStock } from "../lib/stock";
 
 const MAX_IMAGE_BYTES = 1024 * 1024;
 const IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
+const IMAGE_EXTENSIONS = { "image/jpeg": "jpg", "image/png": "png", "image/webp": "webp", "image/gif": "gif" };
 
 export async function addStock(_previousState, formData) {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -26,12 +28,15 @@ export async function addStock(_previousState, formData) {
     return { error: "Choose a picture smaller than 1 MB." };
   }
 
-  const imageUrl = `data:${image.type};base64,${Buffer.from(await image.arrayBuffer()).toString("base64")}`;
+  const blob = await put(`stock/${session.user.id}/${crypto.randomUUID()}.${IMAGE_EXTENSIONS[image.type]}`, image, {
+    access: "private",
+    contentType: image.type
+  });
   await createStock({
     ownerId: session.user.id,
     name,
     description,
-    imageUrl,
+    imageUrl: blob.url,
     isListed: formData.get("isListed") === "on"
   });
 

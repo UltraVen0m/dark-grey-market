@@ -3,6 +3,12 @@ import pg from "pg";
 const { Pool } = pg;
 let pool;
 
+function imageSource({ id, imageUrl }) {
+  return imageUrl.includes(".private.blob.vercel-storage.com/")
+    ? `/api/stock/${id}/image`
+    : imageUrl;
+}
+
 function getPool() {
   if (!process.env.DATABASE_URL) {
     throw new Error("DATABASE_URL must be set to render public stock.");
@@ -22,5 +28,5 @@ export async function getListedStock() {
     ORDER BY stock.created_at DESC, stock.id ASC
   `);
 
-  return result.rows;
+  return result.rows.map((stock) => ({ ...stock, imageUrl: imageSource(stock) }));
 }

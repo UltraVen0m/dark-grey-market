@@ -4,7 +4,7 @@ const { query, Pool } = vi.hoisted(() => ({ query: vi.fn(), Pool: vi.fn() }));
 
 vi.mock("pg", () => ({ default: { Pool } }));
 
-import { createStock, getOwnedStock, listStock } from "./stock";
+import { createStock, getOwnedStock, getStockImage, listStock } from "./stock";
 
 describe("stock repository", () => {
   beforeEach(() => {
@@ -19,10 +19,17 @@ describe("stock repository", () => {
   });
 
   test("returns only stock belonging to the requested owner", async () => {
-    query.mockResolvedValue({ rows: [{ id: "owned-item" }] });
+    query.mockResolvedValue({ rows: [{ id: "owned-item", imageUrl: "https://store.private.blob.vercel-storage.com/stock/owned-item.png" }] });
 
-    await expect(getOwnedStock("owner-id")).resolves.toEqual([{ id: "owned-item" }]);
+    await expect(getOwnedStock("owner-id")).resolves.toEqual([{ id: "owned-item", imageUrl: "/api/stock/owned-item/image" }]);
     expect(query).toHaveBeenCalledWith(expect.stringContaining("WHERE owner_id = $1"), ["owner-id"]);
+  });
+
+  test("returns private image metadata only for the image delivery route", async () => {
+    query.mockResolvedValue({ rows: [{ ownerId: "owner-id", isListed: false, imageUrl: "https://store.private.blob.vercel-storage.com/stock/owned-item.png" }] });
+
+    await expect(getStockImage("owned-item")).resolves.toEqual({ ownerId: "owner-id", isListed: false, imageUrl: "https://store.private.blob.vercel-storage.com/stock/owned-item.png" });
+    expect(query).toHaveBeenCalledWith(expect.stringContaining("WHERE id = $1"), ["owned-item"]);
   });
 
   test("lists stock only when both stock and owner identifiers match", async () => {

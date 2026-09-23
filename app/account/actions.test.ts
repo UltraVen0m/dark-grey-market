@@ -1,15 +1,17 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-const { getSession, headers, revalidatePath, createStock, persistListedStock } = vi.hoisted(() => ({
+const { getSession, headers, revalidatePath, createStock, persistListedStock, put } = vi.hoisted(() => ({
   getSession: vi.fn(),
   headers: vi.fn(),
   revalidatePath: vi.fn(),
   createStock: vi.fn(),
-  persistListedStock: vi.fn()
+  persistListedStock: vi.fn(),
+  put: vi.fn()
 }));
 
 vi.mock("next/headers", () => ({ headers }));
 vi.mock("next/cache", () => ({ revalidatePath }));
+vi.mock("@vercel/blob", () => ({ put }));
 vi.mock("../lib/auth", () => ({ auth: { api: { getSession } } }));
 vi.mock("../lib/stock", () => ({ createStock, listStock: persistListedStock }));
 
@@ -26,6 +28,7 @@ describe("stock actions", () => {
     vi.clearAllMocks();
     headers.mockResolvedValue(new Headers());
     getSession.mockResolvedValue(session);
+    put.mockResolvedValue({ url: "https://store.private.blob.vercel-storage.com/stock/owner-id/image.png" });
   });
 
   test("rejects an upload without a supported picture before persisting it", async () => {
@@ -39,7 +42,8 @@ describe("stock actions", () => {
     const image = { type: "image/png", size: 3, arrayBuffer: vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3]).buffer) };
     const result = await addStock({}, uploadFormData({ name: "Pebble", description: "Lucky", image, isListed: "on" }));
 
-    expect(createStock).toHaveBeenCalledWith(expect.objectContaining({ ownerId: "owner-id", name: "Pebble", description: "Lucky", isListed: true, imageUrl: "data:image/png;base64,AQID" }));
+    expect(put).toHaveBeenCalledWith(expect.stringMatching(/^stock\/owner-id\/.+\.png$/), image, { access: "private", contentType: "image/png" });
+    expect(createStock).toHaveBeenCalledWith(expect.objectContaining({ ownerId: "owner-id", name: "Pebble", description: "Lucky", isListed: true, imageUrl: "https://store.private.blob.vercel-storage.com/stock/owner-id/image.png" }));
     expect(revalidatePath).toHaveBeenCalledWith("/");
     expect(result).toEqual({ success: "Stock added to your stash." });
   });
