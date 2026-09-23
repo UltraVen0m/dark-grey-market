@@ -33,6 +33,54 @@ Matthew has chosen Next.js, PostgreSQL, and Vercel, plus [Better Auth](https://b
 - Always create pull requests in READY state.
 - Always reply to and resolve pull request comments after addressing them.
 
+GitHub issues
+
+- Transition an issue to **In Progress** when work starts.
+- Transition an issue to **In Review** when its pull request is created.
+
+## Working modes
+
+- Normal mode is the default.
+- When the user says **“Let’s vibe”**, enter Vibe mode for the current task and remain in it until the user asks to wrap up or return to normal mode.
+- In Vibe mode, iterate quickly without automatically running the complete test, lint, build, and smoke suite after every change. Run focused checks when they are useful for the change being made.
+- Vibe mode does not relax safety, authorization, destructive-action, pull-request, or repository-specific requirements.
+- When the user says **“Let’s wrap it up”**, **“Wrap it up”**, or **“Back to normal”**, exit Vibe mode and run `npm run test:all`. Report and address failures before calling the work complete.
+
+## Test strategy
+
+The suite protects user-visible behaviour at agreed public seams. Tests should describe outcomes, not implementation details, and every bug fix should begin with a regression test that fails for the reported behaviour.
+
+### Test layers
+
+- **Unit and component tests (Vitest + Testing Library):** cover synchronous domain behaviour and client components through accessible roles, labels, visible messages, and user interactions. Prefer worked examples and literal expected outcomes. Do not snapshot pages or assert CSS classes.
+- **Mocked integration tests (Vitest):** exercise complete server actions and repository functions. Mock only system boundaries: Better Auth, PostgreSQL, Next.js request/cache APIs, UUID/time/randomness, and external services. Do not mock one application module merely to unit-test another unless that module is the deliberate database or external-service boundary of a server action.
+- **Smoke tests (Playwright):** run against a production build and verify critical public pages, public navigation, authentication entry points, and unauthenticated route protection. Smoke tests must not require or mutate production data. Add authenticated smoke coverage only with isolated test accounts and a dedicated test database.
+- **Build checks:** lint and the Next.js production build remain mandatory because they catch framework, type, server/client-boundary, and bundling failures outside the behavioural suite.
+
+### Ownership and placement
+
+- Component tests are colocated with the component as `*.test.tsx`.
+- Server action and repository tests are colocated as `*.test.ts`.
+- Browser smoke tests live in `tests/smoke/*.spec.ts`.
+- Shared Vitest setup belongs in `tests/setup.ts`; avoid large global fixtures.
+- Test data must be explicit, minimal, deterministic, and free of real personal data or secrets.
+
+### Mocking rules
+
+- Mock at system boundaries, never private helpers or internal call order.
+- Assert the observable result first. Boundary-call assertions are appropriate only when the call itself is the observable contract, such as parameters sent to authentication or persistence.
+- Reset mocks between tests. Restore environment variables and fake time after each test.
+- Prefer a real isolated database for future schema/query integration coverage; mocked PostgreSQL tests protect application transaction and parameter behaviour but do not prove SQL compatibility.
+
+### Commands and expectations
+
+- `npm test` runs unit and mocked integration tests once.
+- `npm run test:watch` supports local red/green development.
+- `npm run test:smoke` provisions Chromium, builds the production application, and runs Chromium smoke tests.
+- `npm run test:all` runs lint, unit/mock tests, the production build, and smoke tests.
+- `npm run test:coverage` is available for diagnostics. Coverage is a guide, not a target: prioritise authorization, validation, transactions, role-specific behaviour, and critical journeys over line-count percentages.
+- Pull requests must keep all relevant layers green. A changed public seam requires corresponding test updates; a purely visual change still requires the production build and an appropriate manual visual check.
+
 <!-- BEGIN:nextjs-agent-rules -->
 
 # This is NOT the Next.js you know
