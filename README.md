@@ -20,13 +20,15 @@ The planned site uses a dark theme with black, white, and predominantly dark gre
 
 ## Run locally
 
-This slice includes public browsing and Better Auth email/password accounts. Signed-in users can update their username, profile-picture URL, email, and password from `/account`; updates to the username and picture appear on their listed stock. Uploads and trades are not implemented yet.
+This slice includes public browsing, Better Auth email/password accounts, account-profile management, and private-by-default stock uploads. Trades are not implemented yet. Signed-in users can update their username, profile-picture URL, email, and password from `/account`; username and picture updates appear on listed stock.
 
 1. Copy `.env.example` to `.env.local` and set `DATABASE_URL` for a local PostgreSQL database named `dark_grey_market`. Add `BETTER_AUTH_URL=http://localhost:3000` and a high-entropy `BETTER_AUTH_SECRET` of at least 32 characters.
 2. Create that database: `createdb dark_grey_market`.
 3. Install dependencies: `npm install`.
 4. Create the schema and seed the public listings: `npm run db:migrate && npm run db:seed`.
 5. Start the app: `npm run dev`, then open [http://localhost:3000](http://localhost:3000).
+
+From **Your account**, choose a PNG, JPEG, WebP, or GIF picture under 1 MB, add a name and description, and optionally tick **List it publicly**. Images are stored in a private Vercel Blob store; PostgreSQL stores the Blob URL with the stock record. The app serves a stock image only when the stock is publicly listed or belongs to the signed-in requester. The account page retrieves stock only for the current session's user ID; a user cannot use that page to view or list another user's stock.
 
 The public query selects only listed stock, its name, description, image, owner's username, and owner's profile image. It intentionally does not select email or credential data. Better Auth stores password hashes, accounts, sessions, and verification records in its own tables; its account page checks the current session on the server before rendering private details.
 
@@ -39,14 +41,15 @@ createdb dark_grey_market_test
 TEST_DATABASE_URL=postgres://postgres:postgres@localhost:5432/dark_grey_market_test npm run test:smoke
 ```
 
-The smoke tests verify a visitor can see persisted listed stock and owner public profiles, while a seeded unlisted item and seed email addresses are absent. They also create separate email/password accounts, confirm signed-out visitors are redirected from `/account`, and verify a returning user can sign in again. Run every required check with `npm run test:all`.
+The smoke tests verify a visitor can see persisted listed stock and owner public profiles, while a seeded unlisted item and seed email addresses are absent. They also create separate email/password accounts, confirm signed-out visitors are redirected from `/account`, verify a returning user can sign in again, and upload both a private and a public item through the running app. Run every required check with `npm run test:all`.
 
 ## Deploy to Vercel
 
 1. Import this repository into Vercel. It detects Next.js through `vercel.json`.
 2. Create or connect a PostgreSQL database, then add its pooled connection string as the `DATABASE_URL` environment variable for Preview and Production.
-3. Run `npm run db:migrate` and `npm run db:seed` once against that database (for example, locally with Vercel's pulled environment variables, or through a controlled deployment migration step).
-4. Deploy. The root route renders the public browse page using `DATABASE_URL`.
+3. In the project’s **Storage** tab, create a **private** Vercel Blob store and connect it to Preview, Production, and Development. Vercel adds `BLOB_STORE_ID` and its managed `VERCEL_OIDC_TOKEN` to connected deployments; use `vercel env pull` to obtain local development credentials. Do not expose a Blob token to the browser.
+4. Run `npm run db:migrate` and `npm run db:seed` once against that database (for example, locally with Vercel's pulled environment variables, or through a controlled deployment migration step). If the database contains uploads from the earlier embedded-image implementation, run `npm run db:migrate:stock-images` once after the Blob environment is available; it migrates only `data:` image records and is safe to rerun.
+5. Deploy. The root route renders the public browse page using `DATABASE_URL`.
 
 Do not use the test database URL in Vercel. Add `BETTER_AUTH_URL` for the deployed app's URL and a unique high-entropy `BETTER_AUTH_SECRET` for each environment. Add future email environment variables only with their respective integrations.
 
