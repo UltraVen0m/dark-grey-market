@@ -48,7 +48,7 @@ The smoke tests verify a visitor can see persisted listed stock and owner public
 1. Import this repository into Vercel. It detects Next.js through `vercel.json`.
 2. Create or connect a PostgreSQL database, then add its pooled connection string as the `DATABASE_URL` environment variable for Preview and Production.
 3. In the project’s **Storage** tab, create a **private** Vercel Blob store and connect it to Preview, Production, and Development. Vercel adds `BLOB_STORE_ID` and its managed `VERCEL_OIDC_TOKEN` to connected deployments; use `vercel env pull` to obtain local development credentials. Do not expose a Blob token to the browser.
-4. Run `npm run db:migrate` and `npm run db:seed` once against that database (for example, locally with Vercel's pulled environment variables, or through a controlled deployment migration step).
+4. Run `npm run db:migrate` and `npm run db:seed` once against that database (for example, locally with Vercel's pulled environment variables, or through a controlled deployment migration step). If the database contains uploads from the earlier embedded-image implementation, run `npm run db:migrate:stock-images` once after the Blob environment is available; it migrates only `data:` image records and is safe to rerun.
 5. Deploy. The root route renders the public browse page using `DATABASE_URL`.
 
 Do not use the test database URL in Vercel. Add `BETTER_AUTH_URL` for the deployed app's URL and a unique high-entropy `BETTER_AUTH_SECRET` for each environment. Add future email environment variables only with their respective integrations.
