@@ -20,10 +20,15 @@ h1 { max-width: 850px; margin: 0; font-size: clamp(3rem, 8vw, 7rem); line-height
 .auth-card button:disabled { cursor: wait; opacity: .65; }
 .auth-card a { color: #d4ff4e; }
 .form-error { margin: 0 0 16px; color: #ffaaa0; }
-.account-details { margin: 28px 0; padding: 24px; border: 1px solid #3b3b3b; background: #191919; }
-.account-details dt { margin-top: 18px; color: #aaa; font-size: .8rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
-.account-details dt:first-child { margin-top: 0; }
-.account-details dd { margin: 5px 0 0; font-size: 1.1rem; }
+.profile-forms { margin: 28px 0; }
+.account-details { display: grid; gap: 18px; margin: 18px 0; padding: 24px; border: 1px solid #3b3b3b; background: #191919; }
+.account-details h2 { font-size: 1.5rem; }
+.account-details p { margin: -8px 0 0; color: #bdbdb9; }
+.account-details label { display: grid; gap: 8px; color: #d6d6d1; font-weight: 700; }
+.account-details input { width: 100%; padding: 12px; border: 1px solid #575757; border-radius: 0; background: #0e0e0e; color: #fff; font: inherit; }
+.account-details button { width: fit-content; padding: 11px 14px; border: 1px solid #d4ff4e; background: #d4ff4e; color: #111; font: inherit; font-weight: 800; cursor: pointer; }
+.account-details button:disabled { cursor: wait; opacity: .65; }
+.form-success { margin: 16px 0; color: #d4ff4e; }
 section { padding: 64px 0 44px; }
 .section-heading { display: flex; gap: 24px; align-items: end; justify-content: space-between; margin-bottom: 28px; }
 h2 { margin: 0; font-size: clamp(1.75rem, 4vw, 3.2rem); letter-spacing: -.045em; }
