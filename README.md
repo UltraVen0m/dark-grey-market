@@ -20,7 +20,7 @@ The planned site uses a dark theme with black, white, and predominantly dark gre
 
 ## Run locally
 
-This slice includes public browsing, Better Auth email/password accounts, account-profile management, and private-by-default stock uploads. Trades are not implemented yet. Signed-in users can update their username, profile-picture URL, email, and password from `/account`; username and picture updates appear on listed stock.
+This slice includes public browsing, Better Auth email/password accounts, account-profile management, and private-by-default stock uploads. Trades are not implemented yet. Signed-in users can update their username, uploaded profile picture, email, and password from `/account`; username and picture updates appear on listed stock.
 
 1. Copy `.env.example` to `.env.local` and set `DATABASE_URL` for a local PostgreSQL database named `dark_grey_market`. Add `BETTER_AUTH_URL=http://localhost:3000` and a high-entropy `BETTER_AUTH_SECRET` of at least 32 characters.
 2. Create that database: `createdb dark_grey_market`.
@@ -28,7 +28,7 @@ This slice includes public browsing, Better Auth email/password accounts, accoun
 4. Create the schema and seed the public listings: `npm run db:migrate && npm run db:seed`.
 5. Start the app: `npm run dev`, then open [http://localhost:3000](http://localhost:3000).
 
-From **Your account**, choose a PNG, JPEG, WebP, or GIF picture under 1 MB, add a name and description, and optionally tick **List it publicly**. Images are stored in a private Vercel Blob store; PostgreSQL stores the Blob URL with the stock record. The app serves a stock image only when the stock is publicly listed or belongs to the signed-in requester. The account page retrieves stock only for the current session's user ID; a user cannot use that page to view or list another user's stock.
+From **Your account**, choose a PNG, JPEG, WebP, or GIF picture under 1 MB for your public profile, then choose the same kind of picture when adding stock alongside its name and description. Profile pictures are stored in public Vercel Blob storage because they appear next to public listings. Stock images are stored in a private Vercel Blob store; PostgreSQL stores the Blob URL with the stock record. The app serves a stock image only when the stock is publicly listed or belongs to the signed-in requester. The account page retrieves stock only for the current session's user ID; a user cannot use that page to view or list another user's stock.
 
 The public query selects only listed stock, its name, description, image, owner's username, and owner's profile image. It intentionally does not select email or credential data. Better Auth stores password hashes, accounts, sessions, and verification records in its own tables; its account page checks the current session on the server before rendering private details.
 

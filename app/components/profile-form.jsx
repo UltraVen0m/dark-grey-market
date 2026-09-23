@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { uploadProfileImage } from "../account/actions";
 import { authClient } from "../lib/auth-client";
 
 function messageFor(result, fallback) {
@@ -37,12 +38,16 @@ export function ProfileForm({ email, profileImageUrl, username }) {
     }
   }
 
-  function handlePublicProfile(event) {
+  async function handlePublicProfile(event) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
-    save(
+    await save(
       "public-profile",
-      () => authClient.updateUser({ username: form.get("username"), image: form.get("profileImageUrl") }),
+      async () => {
+        const upload = await uploadProfileImage(form);
+        if (upload.error) return { error: { message: upload.error } };
+        return authClient.updateUser({ username: form.get("username"), image: upload.imageUrl });
+      },
       "Your public profile is saved."
     );
   }
@@ -81,7 +86,8 @@ export function ProfileForm({ email, profileImageUrl, username }) {
         <h2>Public profile</h2>
         <p>This appears on the stock you list.</p>
         <label>Username<input name="username" required defaultValue={username} autoComplete="username" /></label>
-        <label>Profile picture URL<input name="profileImageUrl" required defaultValue={profileImageUrl} /></label>
+        <img className="profile-picture-preview" src={profileImageUrl} alt="Your current profile picture" />
+        <label>Profile picture<input name="image" type="file" accept="image/png,image/jpeg,image/webp,image/gif" required /></label>
         <button type="submit" disabled={saving === "public-profile"}>{saving === "public-profile" ? "Saving…" : "Save public profile"}</button>
       </form>
 

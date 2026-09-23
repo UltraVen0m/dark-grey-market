@@ -45,6 +45,26 @@ export async function addStock(_previousState, formData) {
   return { success: "Stock added to your stash." };
 }
 
+export async function uploadProfileImage(formData) {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session) return { error: "Please sign in before changing your profile picture." };
+
+  const image = formData.get("image");
+  if (!image || typeof image.arrayBuffer !== "function" || !IMAGE_TYPES.has(image.type)) {
+    return { error: "Choose a PNG, JPEG, WebP, or GIF picture." };
+  }
+  if (image.size === 0 || image.size > MAX_IMAGE_BYTES) {
+    return { error: "Choose a picture smaller than 1 MB." };
+  }
+
+  const blob = await put(`profiles/${session.user.id}/${crypto.randomUUID()}.${IMAGE_EXTENSIONS[image.type]}`, image, {
+    access: "public",
+    contentType: image.type
+  });
+
+  return { imageUrl: blob.url };
+}
+
 export async function listStock(_previousState, formData) {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) return { error: "Please sign in before listing stock." };
