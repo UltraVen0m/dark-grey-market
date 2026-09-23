@@ -20,13 +20,15 @@ The planned site uses a dark theme with black, white, and predominantly dark gre
 
 ## Run locally
 
-This slice includes public browsing and Better Auth email/password accounts. Uploads and trades are not implemented yet.
+This slice includes public browsing, Better Auth email/password accounts, and private-by-default stock uploads. Trades are not implemented yet.
 
 1. Copy `.env.example` to `.env.local` and set `DATABASE_URL` for a local PostgreSQL database named `dark_grey_market`. Add `BETTER_AUTH_URL=http://localhost:3000` and a high-entropy `BETTER_AUTH_SECRET` of at least 32 characters.
 2. Create that database: `createdb dark_grey_market`.
 3. Install dependencies: `npm install`.
 4. Create the schema and seed the public listings: `npm run db:migrate && npm run db:seed`.
 5. Start the app: `npm run dev`, then open [http://localhost:3000](http://localhost:3000).
+
+From **Your account**, choose a PNG, JPEG, WebP, or GIF picture under 1 MB, add a name and description, and optionally tick **List it publicly**. Images are stored with the stock record so the app does not require a separate storage service for this initial slice. The account page retrieves stock only for the current session's user ID; a user cannot use that page to view or list another user's stock.
 
 The public query selects only listed stock, its name, description, image, owner's username, and owner's profile image. It intentionally does not select email or credential data. Better Auth stores password hashes, accounts, sessions, and verification records in its own tables; its account page checks the current session on the server before rendering private details.
 
@@ -39,7 +41,7 @@ createdb dark_grey_market_test
 TEST_DATABASE_URL=postgres://postgres:postgres@localhost:5432/dark_grey_market_test npm run test:smoke
 ```
 
-The smoke tests verify a visitor can see persisted listed stock and owner public profiles, while a seeded unlisted item and seed email addresses are absent. They also create separate email/password accounts, confirm signed-out visitors are redirected from `/account`, and verify a returning user can sign in again. Run every required check with `npm run test:all`.
+The smoke tests verify a visitor can see persisted listed stock and owner public profiles, while a seeded unlisted item and seed email addresses are absent. They also create separate email/password accounts, confirm signed-out visitors are redirected from `/account`, verify a returning user can sign in again, and upload both a private and a public item through the running app. Run every required check with `npm run test:all`.
 
 ## Deploy to Vercel
 
