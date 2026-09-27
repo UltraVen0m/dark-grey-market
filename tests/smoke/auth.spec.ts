@@ -43,6 +43,33 @@ test("any visitor can create an account, sign out, and return through sign in", 
   await page.getByRole("button", { name: "Sign in" }).click();
   await expect(page).toHaveURL("/account");
   await expect(page.getByLabel("Email")).toHaveValue("alice@example.test");
+
+  await page.goto("/");
+  await expect(page.getByRole("link", { name: "Manage profile" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Manage stock" })).toBeVisible();
+  await expect(page.getByRole("link", { name: "Sign in", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Sign up", exact: true })).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "Cloudy yo-yo" })).toBeVisible();
+  await expect(page.locator("body")).not.toContainText("alice@example.test");
+  await page.reload();
+  await page.getByRole("link", { name: "Manage profile" }).click();
+  await expect(page.getByLabel("Email")).toHaveValue("alice@example.test");
+  await page.getByRole("link", { name: "Browse stock" }).click();
+  await page.getByRole("link", { name: "Manage stock" }).click();
+  await expect(page.getByRole("heading", { name: "Your stock", exact: true })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Add stock", exact: true })).toBeVisible();
+
+  const anotherTab = await page.context().newPage();
+  await anotherTab.goto("/");
+  await expect(anotherTab.getByRole("link", { name: "Manage profile" })).toBeVisible();
+  await anotherTab.getByRole("button", { name: "Sign out" }).click();
+  await expect(anotherTab.getByRole("link", { name: "Sign in", exact: true })).toBeVisible();
+  await expect(anotherTab.getByRole("link", { name: "Sign up", exact: true })).toBeVisible();
+  await expect(anotherTab.getByRole("link", { name: "Manage profile" })).toHaveCount(0);
+  await expect(anotherTab.getByRole("heading", { name: "Cloudy yo-yo" })).toBeVisible();
+  await page.reload();
+  await expect(page).toHaveURL(/\/sign-in(?:#your-stock)?$/);
+  await anotherTab.close();
 });
 
 test("a separate account cannot see another account's details and public browsing stays open", async ({ browser }) => {
@@ -78,9 +105,9 @@ test("an owner can add private and listed stock without exposing private stock t
   await owner.getByLabel("Password").fill("a-long-enough-password");
   await owner.getByRole("button", { name: "Make my account" }).click();
 
-  await owner.getByLabel("Picture").setInputFiles(picture);
-  await owner.getByLabel("Name").fill("Private test treasure");
-  await owner.getByLabel("Description").fill("Only its owner should find this in their stash.");
+  await owner.getByLabel("Picture", { exact: true }).setInputFiles(picture);
+  await owner.getByLabel("Name", { exact: true }).fill("Private test treasure");
+  await owner.getByLabel("Description", { exact: true }).fill("Only its owner should find this in their stash.");
   await owner.getByRole("button", { name: "Add stock" }).click();
   await expect(owner.getByRole("status")).toHaveText("Stock added to your stash.");
   await expect(owner.getByText("Private test treasure", { exact: true })).toBeVisible();
@@ -89,15 +116,15 @@ test("an owner can add private and listed stock without exposing private stock t
   await expect(owner.getByRole("status")).toHaveText("Stock listed publicly.");
   await expect(owner.getByText("Listed publicly", { exact: true })).toBeVisible();
 
-  await owner.getByLabel("Picture").setInputFiles(picture);
-  await owner.getByLabel("Name").fill("Still private test treasure");
-  await owner.getByLabel("Description").fill("This stays hidden from everyone else.");
+  await owner.getByLabel("Picture", { exact: true }).setInputFiles(picture);
+  await owner.getByLabel("Name", { exact: true }).fill("Still private test treasure");
+  await owner.getByLabel("Description", { exact: true }).fill("This stays hidden from everyone else.");
   await owner.getByRole("button", { name: "Add stock" }).click();
   await expect(owner.getByText("Still private test treasure", { exact: true })).toBeVisible();
 
-  await owner.getByLabel("Picture").setInputFiles(picture);
-  await owner.getByLabel("Name").fill("Listed test treasure");
-  await owner.getByLabel("Description").fill("A real listing that other people can browse.");
+  await owner.getByLabel("Picture", { exact: true }).setInputFiles(picture);
+  await owner.getByLabel("Name", { exact: true }).fill("Listed test treasure");
+  await owner.getByLabel("Description", { exact: true }).fill("A real listing that other people can browse.");
   await owner.getByLabel("List it publicly so other people can browse it").check();
   await owner.getByRole("button", { name: "Add stock" }).click();
   await expect(owner.getByText("Listed test treasure", { exact: true })).toBeVisible();
