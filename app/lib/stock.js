@@ -63,3 +63,24 @@ export async function listStock({ stockId, ownerId }) {
 
   return result.rows[0];
 }
+
+export async function unlistStock({ stockId, ownerId }) {
+  const result = await getPool().query(
+    `UPDATE stock
+     SET is_listed = false
+     WHERE id = $1 AND owner_id = $2
+     RETURNING id`,
+    [stockId, ownerId]
+  );
+  return result.rows[0];
+}
+
+export async function deleteStock({ stockId, ownerId }) {
+  const result = await getPool().query(
+    `DELETE FROM stock
+     WHERE id = $1 AND owner_id = $2
+     RETURNING id`,
+    [stockId, ownerId]
+  );
+  return result.rows[0];
+}

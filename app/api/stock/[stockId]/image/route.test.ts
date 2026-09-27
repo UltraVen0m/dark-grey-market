@@ -45,4 +45,12 @@ describe("private stock image route", () => {
     expect(response.headers.get("content-type")).toBe("image/png");
     expect(get).toHaveBeenCalledWith("stock/listed.png", { access: "private", ifNoneMatch: undefined });
   });
+  test("does not serve a deleted stock image, even to its former owner", async () => {
+    getStockImage.mockResolvedValue(undefined);
+    getSession.mockResolvedValue({ user: { id: "owner-id" } });
+    const response = await GET(new Request("http://test/api/stock/deleted/image"), { params: Promise.resolve({ stockId: "deleted" }) });
+    expect(response.status).toBe(404);
+    expect(get).not.toHaveBeenCalled();
+  });
+
 });
