@@ -1,16 +1,18 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, test, vi } from "vitest";
 import { ProfileForm } from "./profile-form";
 
-const { updateUser, changeEmail, changePassword, refresh } = vi.hoisted(() => ({
+const { updateUser, changeEmail, changePassword, refresh, uploadProfileImage } = vi.hoisted(() => ({
   updateUser: vi.fn(),
   changeEmail: vi.fn(),
   changePassword: vi.fn(),
-  refresh: vi.fn()
+  refresh: vi.fn(),
+  uploadProfileImage: vi.fn()
 }));
 
 vi.mock("next/navigation", () => ({ useRouter: () => ({ refresh }) }));
+vi.mock("../account/actions", () => ({ uploadProfileImage }));
 vi.mock("../lib/auth-client", () => ({
   authClient: { updateUser, changeEmail, changePassword }
 }));
@@ -18,20 +20,35 @@ vi.mock("../lib/auth-client", () => ({
 describe("ProfileForm", () => {
   afterEach(() => vi.clearAllMocks());
 
-  test("saves the public username and profile picture", async () => {
+  test("uploads and saves the public username and profile picture", async () => {
+    uploadProfileImage.mockResolvedValueOnce({ imageUrl: "https://store.public.blob.vercel-storage.com/profiles/owner-id/image.png" });
     updateUser.mockResolvedValueOnce({ data: { status: true } });
     const user = userEvent.setup();
     render(<ProfileForm email="alice@example.test" username="alice" profileImageUrl="/avatars/default.svg" />);
 
     await user.clear(screen.getByLabelText("Username"));
     await user.type(screen.getByLabelText("Username"), "alice-updated");
-    await user.clear(screen.getByLabelText("Profile picture URL"));
-    await user.type(screen.getByLabelText("Profile picture URL"), "/avatars/orbit.svg");
-    await user.click(screen.getByRole("button", { name: "Save public profile" }));
+    const picture = new File(["picture"], "profile.png", { type: "image/png" });
+    await user.upload(screen.getByLabelText("Profile picture"), picture);
+    fireEvent.submit(screen.getByRole("button", { name: "Save public profile" }).closest("form")!);
 
     expect(await screen.findByRole("status")).toHaveTextContent("Your public profile is saved.");
-    expect(updateUser).toHaveBeenCalledWith({ username: "alice-updated", image: "/avatars/orbit.svg" });
+    expect(uploadProfileImage).toHaveBeenCalledWith(expect.any(FormData));
+    expect(updateUser).toHaveBeenCalledWith({ username: "alice-updated", image: "https://store.public.blob.vercel-storage.com/profiles/owner-id/image.png" });
     expect(refresh).toHaveBeenCalled();
+  });
+
+  test("shows an upload validation error without updating the public profile", async () => {
+    uploadProfileImage.mockResolvedValueOnce({ error: "Choose a PNG, JPEG, WebP, or GIF picture." });
+    const user = userEvent.setup();
+    render(<ProfileForm email="alice@example.test" username="alice" profileImageUrl="/avatars/default.svg" />);
+
+    const picture = new File(["not an image"], "profile.txt", { type: "text/plain" });
+    await user.upload(screen.getByLabelText("Profile picture"), picture);
+    fireEvent.submit(screen.getByRole("button", { name: "Save public profile" }).closest("form")!);
+
+    expect(await screen.findByRole("alert")).toHaveTextContent("Choose a PNG, JPEG, WebP, or GIF picture.");
+    expect(updateUser).not.toHaveBeenCalled();
   });
 
   test("does not send mismatched new passwords", async () => {
