@@ -6,6 +6,7 @@ import { StockForm } from "../components/stock-form";
 import { StockListingControl } from "../components/stock-listing-control";
 import { getOwnedStock } from "../lib/stock";
 import { ProfileForm } from "../components/profile-form";
+import { profileImageSource } from "../lib/profile-image";
 
 export const dynamic = "force-dynamic";
 
@@ -24,7 +25,7 @@ export default async function AccountPage() {
       <p className="intro">Make this account yours, then add things you own and choose what people can browse for a swap.</p>
       <ProfileForm
         email={session.user.email}
-        profileImageUrl={session.user.image || "/avatars/default.svg"}
+        profileImageUrl={profileImageSource({ userId: session.user.id, imageUrl: session.user.image || "/avatars/default.svg" })}
         username={session.user.name}
       />
       <dl className="account-summary"><dt>Username</dt><dd>{session.user.name}</dd><dt>Email</dt><dd>{session.user.email}</dd></dl>

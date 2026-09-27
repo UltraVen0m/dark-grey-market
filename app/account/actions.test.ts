@@ -17,7 +17,7 @@ vi.mock("@vercel/blob", () => ({ put }));
 vi.mock("../lib/auth", () => ({ auth: { api: { getSession } } }));
 vi.mock("../lib/stock", () => ({ createStock, listStock: persistListedStock, unlistStock: persistUnlistedStock, deleteStock: persistDeletedStock }));
 
-import { addStock, listStock, unlistStock, deleteStock } from "./actions";
+import { addStock, listStock, unlistStock, deleteStock, uploadProfileImage } from "./actions";
 
 const session = { user: { id: "owner-id" } };
 
@@ -48,6 +48,23 @@ describe("stock actions", () => {
     expect(createStock).toHaveBeenCalledWith(expect.objectContaining({ ownerId: "owner-id", name: "Pebble", description: "Lucky", isListed: true, imageUrl: "https://store.private.blob.vercel-storage.com/stock/owner-id/image.png" }));
     expect(revalidatePath).toHaveBeenCalledWith("/");
     expect(result).toEqual({ success: "Stock added to your stash." });
+  });
+
+  test("uploads a valid profile picture for the authenticated user", async () => {
+    const image = { type: "image/webp", size: 3, arrayBuffer: vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3]).buffer) };
+    put.mockResolvedValueOnce({ url: "https://store.private.blob.vercel-storage.com/profiles/owner-id/image.webp" });
+
+    const result = await uploadProfileImage(uploadFormData({ image }));
+
+    expect(put).toHaveBeenCalledWith(expect.stringMatching(/^profiles\/owner-id\/.+\.webp$/), image, { access: "private", contentType: "image/webp" });
+    expect(result).toEqual({ imageUrl: "https://store.private.blob.vercel-storage.com/profiles/owner-id/image.webp" });
+  });
+
+  test("does not upload an invalid profile picture", async () => {
+    const result = await uploadProfileImage(uploadFormData({ image: { type: "image/svg+xml", size: 2 } }));
+
+    expect(result).toEqual({ error: "Choose a PNG, JPEG, WebP, or GIF picture." });
+    expect(put).not.toHaveBeenCalled();
   });
 
   test("refuses to list stock that is not owned by the current user", async () => {

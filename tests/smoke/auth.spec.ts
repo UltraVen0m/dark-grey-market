@@ -128,6 +128,11 @@ test("an owner can add private and listed stock without exposing private stock t
 });
 
 test("a user updates their profile, email, and password while their listing shows only the new public profile", async ({ browser }) => {
+  const picture = {
+    name: "profile.png",
+    mimeType: "image/png",
+    buffer: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVQIHWP4z8DwHwAFgAI/ScL9iAAAAABJRU5ErkJggg==", "base64")
+  };
   const aliceContext = await browser.newContext();
   const alice = await aliceContext.newPage();
   await alice.goto("/sign-up");
@@ -138,7 +143,7 @@ test("a user updates their profile, email, and password while their listing show
   await addListedStockFor("profile-alice@example.test");
 
   await alice.getByLabel("Username").fill("profile-alice-new");
-  await alice.getByLabel("Profile picture URL").fill("/avatars/orbit.svg");
+  await alice.getByLabel("Profile picture").setInputFiles(picture);
   await alice.getByRole("button", { name: "Save public profile" }).click();
   await expect(alice.getByRole("status")).toHaveText("Your public profile is saved.");
   await alice.reload();
@@ -181,7 +186,7 @@ test("a user updates their profile, email, and password while their listing show
   await visitor.goto("/");
   const listing = visitor.getByRole("article").filter({ hasText: "Alice's test badge" });
   await expect(listing.getByText("Listed by profile-alice-new")).toBeVisible();
-  await expect(listing.locator(".owner img")).toHaveAttribute("src", "/avatars/orbit.svg");
+  await expect(listing.locator(".owner img")).toHaveAttribute("src", /api\/profile\/.*\/image$/);
   await expect(visitor.getByText("profile-alice-new@example.test", { exact: true })).not.toBeVisible();
 
   await alice.getByRole("button", { name: "Sign out" }).click();
