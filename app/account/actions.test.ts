@@ -50,12 +50,12 @@ describe("stock actions", () => {
 
   test("uploads a valid profile picture for the authenticated user", async () => {
     const image = { type: "image/webp", size: 3, arrayBuffer: vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3]).buffer) };
-    put.mockResolvedValueOnce({ url: "https://store.public.blob.vercel-storage.com/profiles/owner-id/image.webp" });
+    put.mockResolvedValueOnce({ url: "https://store.private.blob.vercel-storage.com/profiles/owner-id/image.webp" });
 
     const result = await uploadProfileImage(uploadFormData({ image }));
 
-    expect(put).toHaveBeenCalledWith(expect.stringMatching(/^profiles\/owner-id\/.+\.webp$/), image, { access: "public", contentType: "image/webp" });
-    expect(result).toEqual({ imageUrl: "https://store.public.blob.vercel-storage.com/profiles/owner-id/image.webp" });
+    expect(put).toHaveBeenCalledWith(expect.stringMatching(/^profiles\/owner-id\/.+\.webp$/), image, { access: "private", contentType: "image/webp" });
+    expect(result).toEqual({ imageUrl: "https://store.private.blob.vercel-storage.com/profiles/owner-id/image.webp" });
   });
 
   test("does not upload an invalid profile picture", async () => {
