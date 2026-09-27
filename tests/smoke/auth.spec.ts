@@ -186,7 +186,7 @@ test("a user updates their profile, email, and password while their listing show
   await visitor.goto("/");
   const listing = visitor.getByRole("article").filter({ hasText: "Alice's test badge" });
   await expect(listing.getByText("Listed by profile-alice-new")).toBeVisible();
-  await expect(listing.locator(".owner img")).toHaveAttribute("src", /profiles\/.*\.png$/);
+  await expect(listing.locator(".owner img")).toHaveAttribute("src", /api\/profile\/.*\/image$/);
   await expect(visitor.getByText("profile-alice-new@example.test", { exact: true })).not.toBeVisible();
 
   await alice.getByRole("button", { name: "Sign out" }).click();

@@ -58,7 +58,7 @@ export async function uploadProfileImage(formData) {
   }
 
   const blob = await put(`profiles/${session.user.id}/${crypto.randomUUID()}.${IMAGE_EXTENSIONS[image.type]}`, image, {
-    access: "public",
+    access: "private",
     contentType: image.type
   });
 
