@@ -1,10 +1,16 @@
 import { getListedStock } from "./lib/public-stock";
+import { headers } from "next/headers";
 import Link from "next/link";
+import { auth } from "./lib/auth";
+import { SignOutButton } from "./components/sign-out-button";
 
 export const dynamic = "force-dynamic";
 
 export default async function BrowsePage() {
-  const stock = await getListedStock();
+  const [stock, session] = await Promise.all([
+    getListedStock(),
+    auth.api.getSession({ headers: await headers(), query: { disableCookieCache: true } })
+  ]);
 
   return (
     <main>
@@ -13,8 +19,14 @@ export default async function BrowsePage() {
         <h1>Good stuff. Strange stuff. Your next swap.</h1>
         <p className="intro">Have a look around. Sign in when you are ready to put something on the table.</p>
         <div className="hero-actions">
-          <Link className="auth-link" href="/sign-up">Sign up</Link>
-          <Link className="auth-link" href="/sign-in">Sign in</Link>
+          {session ? <>
+            <Link className="auth-link" href="/account">Manage profile</Link>
+            <Link className="auth-link" href="/account#your-stock">Manage stock</Link>
+            <SignOutButton />
+          </> : <>
+            <Link className="auth-link" href="/sign-up">Sign up</Link>
+            <Link className="auth-link" href="/sign-in">Sign in</Link>
+          </>}
           <a className="join-link" href="#stock">Browse the stock <span aria-hidden="true">↓</span></a>
         </div>
       </header>

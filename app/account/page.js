@@ -1,4 +1,5 @@
 import { headers } from "next/headers";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "../lib/auth";
 import { SignOutButton } from "../components/sign-out-button";
@@ -23,6 +24,7 @@ export default async function AccountPage() {
       <p className="eyebrow">Your account</p>
       <h1>Hello, {session.user.name}.</h1>
       <p className="intro">Make this account yours, then add things you own and choose what people can browse for a swap.</p>
+      <Link className="auth-link" href="/">Browse stock</Link>
       <ProfileForm
         email={session.user.email}
         profileImageUrl={profileImageSource({ userId: session.user.id, imageUrl: session.user.image || "/avatars/default.svg" })}
@@ -34,7 +36,7 @@ export default async function AccountPage() {
         <h2 id="add-stock-heading">Add some stock</h2>
         <StockForm />
       </section>
-      <section className="account-stock" aria-labelledby="your-stock-heading">
+      <section id="your-stock" className="account-stock" aria-labelledby="your-stock-heading">
         <p className="eyebrow">Only you can see this list</p>
         <h2 id="your-stock-heading">Your stock</h2>
         {stock.length ? <div className="owned-stock-grid">{stock.map((item) => <article className="owned-stock" key={item.id}>
