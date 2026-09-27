@@ -3,12 +3,14 @@ import { headers } from "next/headers";
 import { auth } from "../../../../lib/auth";
 import { getStockImage } from "../../../../lib/stock";
 
+import { canViewTradeStock } from "../../../../lib/trades";
+
 export async function GET(request, { params }) {
   const { stockId } = await params;
   const stock = await getStockImage(stockId);
   const session = await auth.api.getSession({ headers: await headers() });
 
-  if (!stock || (!stock.isListed && session?.user.id !== stock.ownerId)) {
+  if (!stock || (!stock.isListed && session?.user.id !== stock.ownerId && !(session && await canViewTradeStock(stockId, session.user.id)))) {
     return new Response("Not found", { status: 404 });
   }
 

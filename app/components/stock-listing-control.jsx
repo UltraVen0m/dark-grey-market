@@ -3,7 +3,7 @@
 import { useActionState, useState } from "react";
 import { listStock, unlistStock, deleteStock } from "../account/actions";
 
-export function StockListingControl({ stockId, isListed = false, stockName }) {
+export function StockListingControl({ stockId, isListed = false, stockName, isCommitted = false }) {
   const [confirming, setConfirming] = useState(false);
   const [listingState, listingAction, listingPending] = useActionState(isListed ? unlistStock : listStock, {});
   const [deleteState, deleteAction, deletePending] = useActionState(deleteStock, {});
@@ -18,12 +18,12 @@ export function StockListingControl({ stockId, isListed = false, stockName }) {
         {listingPending ? "Saving…" : isListed ? "Unlist" : "List publicly"}
       </button>
     </form>
-    {confirming ? <form action={deleteAction}>
+    {!isCommitted && (confirming ? <form action={deleteAction}>
       <input name="stockId" type="hidden" value={stockId} />
       <p>Delete {stockName || "this stock"} from your stash? This cannot be undone.</p>
       {deleteState.error && <p className="form-error" role="alert">{deleteState.error}</p>}
       <button type="submit" disabled={pending}>{deletePending ? "Deleting…" : "Confirm delete"}</button>{" "}
       <button type="button" disabled={pending} onClick={() => setConfirming(false)}>Keep stock</button>
-    </form> : <button type="button" disabled={pending} onClick={() => setConfirming(true)}>Delete stock</button>}
+    </form> : <button type="button" disabled={pending} onClick={() => setConfirming(true)}>Delete stock</button>)}
   </div>;
 }

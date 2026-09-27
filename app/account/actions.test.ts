@@ -105,7 +105,7 @@ describe.each([
 
   test("rejects missing or foreign stock without claiming success", async () => {
     persist.mockResolvedValue(undefined);
-    expect(await action({}, uploadFormData({ stockId }))).toEqual({ error: "That stock is not in your stash." });
+    expect(await action({}, uploadFormData({ stockId }))).toEqual({ error: action === deleteStock ? "That stock is unavailable. Items in a trade cannot be deleted." : "That stock is not in your stash." });
     expect(revalidatePath).not.toHaveBeenCalled();
   });
 

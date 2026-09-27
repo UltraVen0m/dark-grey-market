@@ -22,6 +22,7 @@ export default async function BrowsePage() {
           {session ? <>
             <Link className="auth-link" href="/account">Manage profile</Link>
             <Link className="auth-link" href="/account#your-stock">Manage stock</Link>
+            <Link className="auth-link" href="/trades">Your trades</Link>
             <SignOutButton />
           </> : <>
             <Link className="auth-link" href="/sign-up">Sign up</Link>
@@ -47,6 +48,7 @@ export default async function BrowsePage() {
                 <img className="stock-image" src={item.imageUrl} alt="" />
                 <div className="card-content">
                   <h3>{item.name}</h3>
+                  {item.isCommitted ? <p>In an active trade</p> : session?.user.id !== item.ownerId && <Link className="auth-link" href={session ? `/trades?target=${item.id}` : "/sign-in"}>Make an offer</Link>}
                   <p>{item.description}</p>
                   <div className="owner">
                     <img src={item.profileImageUrl} alt="" />

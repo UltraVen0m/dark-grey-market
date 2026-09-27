@@ -72,3 +72,8 @@ h3 { margin: 0 0 10px; font-size: 1.35rem; letter-spacing: -.03em; }
 @media (max-width: 760px) { main { padding: 18px; } .hero { min-height: 340px; } .stock-grid { grid-template-columns: 1fr; } .section-heading { align-items: start; flex-direction: column; } .owned-stock { grid-template-columns: 80px 1fr; } .owned-stock img { width: 80px; height: 80px; } }
 
 .listing-control { display: grid; gap: 10px; justify-items: start; }
+
+.trade-card { margin-block: 2rem; padding: 1.5rem; border: 1px solid #555; background: #202020; border-radius: 1rem; }
+.auth-form select { padding: .75rem; color: #fff; background: #202020; max-width: 100%; }
+.auth-form fieldset { border: 1px solid #555; padding: 1rem; }
+.auth-form input[type="checkbox"] { width: auto; margin-right: .75rem; }

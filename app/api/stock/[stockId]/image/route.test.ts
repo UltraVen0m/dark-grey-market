@@ -1,10 +1,11 @@
 import { beforeEach, describe, expect, test, vi } from "vitest";
 
-const { get, headers, getSession, getStockImage } = vi.hoisted(() => ({
+const { get, headers, getSession, getStockImage, canViewTradeStock } = vi.hoisted(() => ({
   get: vi.fn(),
   headers: vi.fn(),
   getSession: vi.fn(),
-  getStockImage: vi.fn()
+  getStockImage: vi.fn(),
+  canViewTradeStock: vi.fn()
 }));
 
 vi.mock("@vercel/blob", () => ({ get }));
@@ -12,12 +13,15 @@ vi.mock("next/headers", () => ({ headers }));
 vi.mock("../../../../lib/auth", () => ({ auth: { api: { getSession } } }));
 vi.mock("../../../../lib/stock", () => ({ getStockImage }));
 
+vi.mock("../../../../lib/trades", () => ({ canViewTradeStock }));
+
 import { GET } from "./route";
 
 describe("private stock image route", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     headers.mockResolvedValue(new Headers());
+    canViewTradeStock.mockResolvedValue(false);
   });
 
   test("does not reveal an unlisted image to another user", async () => {
@@ -53,4 +57,12 @@ describe("private stock image route", () => {
     expect(get).not.toHaveBeenCalled();
   });
 
+});
+
+test("a participant can view the private stock offered to them", async () => {
+  getStockImage.mockResolvedValue({ ownerId: "alice", isListed: false, imageUrl: "https://store.private.blob.vercel-storage.com/stock/private.png" });
+  getSession.mockResolvedValue({ user: { id: "bob" } });
+  canViewTradeStock.mockResolvedValue(true);
+  get.mockResolvedValue({ statusCode: 200, stream: new ReadableStream(), blob: { contentType: "image/png", etag: "etag" } });
+  expect((await GET(new Request("http://test/api/stock/private/image"), { params: Promise.resolve({ stockId: "private" }) })).status).toBe(200);
 });

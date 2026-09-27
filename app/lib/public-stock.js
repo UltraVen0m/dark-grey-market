@@ -22,6 +22,7 @@ function getPool() {
 export async function getListedStock() {
   const result = await getPool().query(`
     SELECT stock.id, stock.name, stock.description, stock.image_url AS "imageUrl",
+           EXISTS (SELECT 1 FROM stock_commitments c WHERE c.stock_id = stock.id) AS "isCommitted",
            users.id AS "ownerId", users.username, users.profile_image_url AS "profileImageUrl"
     FROM stock
     JOIN users ON users.id = stock.owner_id
