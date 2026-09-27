@@ -20,7 +20,8 @@ function getPool() {
 
 export async function getOwnedStock(ownerId) {
   const result = await getPool().query(
-    `SELECT id, name, description, image_url AS "imageUrl", is_listed AS "isListed"
+    `SELECT id, name, description, image_url AS "imageUrl", is_listed AS "isListed",
+       EXISTS (SELECT 1 FROM stock_commitments c WHERE c.stock_id = stock.id) AS "isCommitted"
      FROM stock
      WHERE owner_id = $1
      ORDER BY created_at DESC, id ASC`,
@@ -76,11 +77,16 @@ export async function unlistStock({ stockId, ownerId }) {
 }
 
 export async function deleteStock({ stockId, ownerId }) {
-  const result = await getPool().query(
-    `DELETE FROM stock
-     WHERE id = $1 AND owner_id = $2
-     RETURNING id`,
-    [stockId, ownerId]
-  );
-  return result.rows[0];
+  try {
+    const result = await getPool().query(
+      `DELETE FROM stock
+       WHERE id = $1 AND owner_id = $2
+       RETURNING id`,
+      [stockId, ownerId]
+    );
+    return result.rows[0];
+  } catch (error) {
+    if (error.code === "23503") return undefined;
+    throw error;
+  }
 }

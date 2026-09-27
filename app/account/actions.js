@@ -78,7 +78,7 @@ export async function listStock(_previousState, formData) {
   return { success: "Stock listed publicly." };
 }
 
-async function changeOwnedStock(formData, operation, signInMessage, success) {
+async function changeOwnedStock(formData, operation, signInMessage, success, unavailableMessage = "That stock is not in your stash.") {
   const session = await auth.api.getSession({ headers: await headers() });
   if (!session) return { error: signInMessage };
 
@@ -87,7 +87,7 @@ async function changeOwnedStock(formData, operation, signInMessage, success) {
     return { error: "That stock is not in your stash." };
   }
   const stock = await operation({ stockId, ownerId: session.user.id });
-  if (!stock) return { error: "That stock is not in your stash." };
+  if (!stock) return { error: unavailableMessage };
 
   revalidatePath("/");
   revalidatePath("/account");
@@ -101,5 +101,6 @@ export async function unlistStock(_previousState, formData) {
 
 export async function deleteStock(_previousState, formData) {
   return changeOwnedStock(formData, persistDeletedStock,
-    "Please sign in before deleting stock.", "Stock deleted from your stash.");
+    "Please sign in before deleting stock.", "Stock deleted from your stash.",
+    "That stock is unavailable. Items in a trade cannot be deleted.");
 }

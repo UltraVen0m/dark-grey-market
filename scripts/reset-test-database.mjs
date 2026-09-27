@@ -8,7 +8,7 @@ if (!url.pathname.endsWith("_test")) {
 
 const pool = createPool();
 try {
-  await pool.query('DROP TABLE IF EXISTS stock, users, "verification", account, session CASCADE');
+  await pool.query('DROP TABLE IF EXISTS trade_emails, stock_commitments, trade_items, trades, stock, users, "verification", account, session CASCADE');
   console.log("Reset isolated test database.");
 } finally {
   await pool.end();

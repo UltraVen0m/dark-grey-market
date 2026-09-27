@@ -11,6 +11,7 @@ export const auth = betterAuth({
   database: new Pool({ connectionString: process.env.DATABASE_URL }),
   baseURL: process.env.BETTER_AUTH_URL,
   secret: process.env.BETTER_AUTH_SECRET,
+  rateLimit: { enabled: process.env.BETTER_AUTH_DISABLE_RATE_LIMIT !== "true" },
   advanced: { database: { generateId: () => crypto.randomUUID() } },
   user: {
     modelName: "users",
