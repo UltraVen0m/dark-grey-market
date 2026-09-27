@@ -39,7 +39,7 @@ export default async function AccountPage() {
         <h2 id="your-stock-heading">Your stock</h2>
         {stock.length ? <div className="owned-stock-grid">{stock.map((item) => <article className="owned-stock" key={item.id}>
           <img src={item.imageUrl} alt="" />
-          <div><h3>{item.name}</h3><p>{item.description}</p>{item.isListed ? <p className="listed-status">Listed publicly</p> : <><p className="private-status">Private</p><StockListingControl stockId={item.id} /></>}</div>
+          <div><h3>{item.name}</h3><p>{item.description}</p>{item.isListed ? <p className="listed-status">Listed publicly</p> : <p className="private-status">Private</p>}<StockListingControl stockId={item.id} isListed={item.isListed} stockName={item.name} /></div>
         </article>)}</div> : <p className="empty">Your stash is empty. Put your first thing on the table.</p>}
       </section>
       <SignOutButton />

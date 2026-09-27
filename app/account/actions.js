@@ -4,7 +4,7 @@ import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { put } from "@vercel/blob";
 import { auth } from "../lib/auth";
-import { createStock, listStock as persistListedStock } from "../lib/stock";
+import { createStock, listStock as persistListedStock, unlistStock as persistUnlistedStock, deleteStock as persistDeletedStock } from "../lib/stock";
 
 const MAX_IMAGE_BYTES = 1024 * 1024;
 const IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/gif"]);
@@ -76,4 +76,30 @@ export async function listStock(_previousState, formData) {
   revalidatePath("/");
   revalidatePath("/account");
   return { success: "Stock listed publicly." };
+}
+
+async function changeOwnedStock(formData, operation, signInMessage, success) {
+  const session = await auth.api.getSession({ headers: await headers() });
+  if (!session) return { error: signInMessage };
+
+  const stockId = String(formData.get("stockId") || "");
+  if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(stockId)) {
+    return { error: "That stock is not in your stash." };
+  }
+  const stock = await operation({ stockId, ownerId: session.user.id });
+  if (!stock) return { error: "That stock is not in your stash." };
+
+  revalidatePath("/");
+  revalidatePath("/account");
+  return { success };
+}
+
+export async function unlistStock(_previousState, formData) {
+  return changeOwnedStock(formData, persistUnlistedStock,
+    "Please sign in before unlisting stock.", "Stock is now private.");
+}
+
+export async function deleteStock(_previousState, formData) {
+  return changeOwnedStock(formData, persistDeletedStock,
+    "Please sign in before deleting stock.", "Stock deleted from your stash.");
 }

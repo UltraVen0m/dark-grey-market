@@ -200,3 +200,52 @@ test("a user updates their profile, email, and password while their listing show
   await bobContext.close();
   await visitorContext.close();
 });
+
+test("an owner can unlist, relist, and delete stock", async ({ browser }) => {
+  const owner = await browser.newPage();
+  const visitor = await browser.newPage();
+  await owner.goto("/sign-up");
+  await owner.getByLabel("Username").fill("stock-controls-owner");
+  await owner.getByLabel("Email").fill("stock-controls@example.test");
+  await owner.getByLabel("Password").fill("a-long-enough-password");
+  await owner.getByRole("button", { name: "Make my account" }).click();
+  await expect(owner).toHaveURL("/account");
+
+  const pool = new Pool({ connectionString: process.env.TEST_DATABASE_URL });
+  try {
+    await pool.query(
+      `INSERT INTO stock (id, owner_id, name, description, image_url, is_listed)
+       SELECT $1, id, $2, $3, $4, true FROM users WHERE email = $5`,
+      ["bbc98c85-5c39-4b5b-8f24-f25a2405a4ab", "Controls test pebble", "An owned test item", "/stock/private-pebble.svg", "stock-controls@example.test"]
+    );
+  } finally {
+    await pool.end();
+  }
+  await owner.reload();
+  const item = owner.getByRole("article").filter({ hasText: "Controls test pebble" });
+  await visitor.goto("/");
+  await expect(visitor.getByRole("heading", { name: "Controls test pebble" })).toBeVisible();
+
+  await item.getByRole("button", { name: "Unlist", exact: true }).click();
+  await expect(item.getByText("Private", { exact: true })).toBeVisible();
+  await visitor.reload();
+  await expect(visitor.getByRole("heading", { name: "Controls test pebble" })).not.toBeVisible();
+
+  await item.getByRole("button", { name: "List publicly" }).click();
+  await expect(item.getByText("Listed publicly", { exact: true })).toBeVisible();
+  await visitor.reload();
+  await expect(visitor.getByRole("heading", { name: "Controls test pebble" })).toBeVisible();
+
+  await item.getByRole("button", { name: "Delete stock" }).click();
+  await item.getByRole("button", { name: "Keep stock" }).click();
+  await expect(item).toBeVisible();
+  await item.getByRole("button", { name: "Delete stock" }).click();
+  await item.getByRole("button", { name: "Confirm delete" }).click();
+  await expect(item).not.toBeVisible();
+  await owner.reload();
+  await expect(item).not.toBeVisible();
+  await visitor.reload();
+  await expect(visitor.getByRole("heading", { name: "Controls test pebble" })).not.toBeVisible();
+  await owner.close();
+  await visitor.close();
+});

@@ -70,3 +70,5 @@ h3 { margin: 0 0 10px; font-size: 1.35rem; letter-spacing: -.03em; }
 .owner strong { color: #fff; }
 .empty { padding: 48px; border: 1px dashed #4a4a4a; color: #bdbdb9; text-align: center; }
 @media (max-width: 760px) { main { padding: 18px; } .hero { min-height: 340px; } .stock-grid { grid-template-columns: 1fr; } .section-heading { align-items: start; flex-direction: column; } .owned-stock { grid-template-columns: 80px 1fr; } .owned-stock img { width: 80px; height: 80px; } }
+
+.listing-control { display: grid; gap: 10px; justify-items: start; }

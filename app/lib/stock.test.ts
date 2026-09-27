@@ -4,7 +4,7 @@ const { query, Pool } = vi.hoisted(() => ({ query: vi.fn(), Pool: vi.fn() }));
 
 vi.mock("pg", () => ({ default: { Pool } }));
 
-import { createStock, getOwnedStock, getStockImage, listStock } from "./stock";
+import { createStock, getOwnedStock, getStockImage, listStock, unlistStock, deleteStock } from "./stock";
 
 describe("stock repository", () => {
   beforeEach(() => {
@@ -45,5 +45,29 @@ describe("stock repository", () => {
 
     await expect(createStock({ ownerId: "owner-id", name: "Pebble", description: "Lucky", imageUrl: "data:image/png;base64,AQID", isListed: false })).resolves.toEqual({ id: "new-item" });
     expect(query).toHaveBeenCalledWith(expect.stringContaining("INSERT INTO stock"), ["new-item", "owner-id", "Pebble", "Lucky", "data:image/png;base64,AQID", false]);
+  });
+});
+
+ describe.each([
+  ["unlist", unlistStock, "SET is_listed = false"],
+  ["delete", deleteStock, "DELETE FROM stock"]
+] as const)("%s repository", (_name, operation, statement) => {
+  beforeEach(() => {
+    vi.stubEnv("DATABASE_URL", "postgres://test");
+    Pool.mockImplementation(function PoolConnection() { return { query }; });
+    query.mockReset();
+  });
+  afterEach(() => vi.unstubAllEnvs());
+
+  test("changes only the matching owner's stock", async () => {
+    query.mockResolvedValue({ rows: [{ id: "owned-item" }] });
+    expect(await operation({ stockId: "owned-item", ownerId: "owner-id" })).toEqual({ id: "owned-item" });
+    expect(query).toHaveBeenCalledWith(expect.stringContaining(statement), ["owned-item", "owner-id"]);
+    expect(query.mock.calls[0][0]).toContain("WHERE id = $1 AND owner_id = $2");
+  });
+
+  test("returns no success for missing or foreign stock", async () => {
+    query.mockResolvedValue({ rows: [] });
+    expect(await operation({ stockId: "foreign-item", ownerId: "owner-id" })).toBeUndefined();
   });
 });
